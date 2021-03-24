@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
@@ -17,7 +18,17 @@ type Game struct {
 type Games []*Game
 
 func GetGames() Games {
-	return ourGames
+	return OurGames
+}
+
+func GetGame(id int) (*Game, error) {
+	g, err := findGame(id)
+	return g, err
+}
+
+func AddGame(g *Game) {
+	g.ID = getNextID()
+	OurGames = append(OurGames, g)
 }
 
 func (g *Games) ToJSON(w io.Writer) error {
@@ -25,7 +36,30 @@ func (g *Games) ToJSON(w io.Writer) error {
 	return e.Encode(g)
 }
 
-var ourGames = []*Game{
+var ErrGameNotFound = fmt.Errorf("Game not found")
+
+func findGame(id int) (*Game, error) {
+	for _, g := range OurGames {
+		if g.ID == id {
+			return g, nil
+		}
+	}
+
+	return nil, ErrGameNotFound
+}
+
+func NewGame() *Game {
+	var game Game
+	game.ID = getNextID()
+	return &game
+}
+
+func getNextID() int {
+	lp := OurGames[len(OurGames)-1]
+	return lp.ID + 1
+}
+
+var OurGames = []*Game{
 	{
 		ID:          1,
 		Name:        "Dark Souls",

@@ -16,9 +16,14 @@ func main() {
 
 	gl := handlers.NewGames(l)
 
+	getAllRouter := r.Methods(http.MethodGet).Subrouter()
+	getAllRouter.HandleFunc("/", gl.GetGames)
+
 	getRouter := r.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", gl.GetGames)
-	r.Use(loggingMiddleware)
+	getRouter.HandleFunc("/{id:[0-9]+}", gl.GetGame)
+
+	postRouter := r.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", gl.AddGame)
 
 	// Create Server
 	srv := &http.Server{
@@ -29,11 +34,4 @@ func main() {
 	}
 
 	log.Fatal(srv.ListenAndServe())
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		log.Println(r.RequestURI)
-		next.ServeHTTP(rw, r)
-	})
 }
