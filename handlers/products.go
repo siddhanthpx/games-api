@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"rest_api/cache"
 	"rest_api/data"
 	"strconv"
 
 	"github.com/gorilla/mux"
 )
+
+var postCache cache.PostCache
 
 type Games struct {
 	l *log.Logger
@@ -31,19 +34,29 @@ func (g *Games) GetGames(rw http.ResponseWriter, r *http.Request) {
 func (g *Games) GetGame(rw http.ResponseWriter, r *http.Request) {
 	g.l.Println("Handle GET Request")
 	vars := mux.Vars(r)
+	var post *data.Game = postCache.Get(vars["id"])
 	id, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		http.Error(rw, "Cannot parse ID", http.StatusBadRequest)
-	}
 
-	game, err := data.GetGame(id)
+	if post == nil {
+		game, err := data.GetGame(id)
+
+		if err != nil {
+			http.Error(rw, "Cannot parse ID", http.StatusBadRequest)
+			return
+		}
+
+		postCache.Set(vars["id"], game)
+		enc := json.NewEncoder(rw)
+		enc.Encode(game)
+	} else {
+		enc := json.NewEncoder(rw)
+		enc.Encode(post)
+
+	}
 
 	if err != nil {
 		http.Error(rw, "Cannot find game with ID", http.StatusNotFound)
 	}
-
-	enc := json.NewEncoder(rw)
-	enc.Encode(game)
 
 }
 

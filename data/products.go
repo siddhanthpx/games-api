@@ -62,7 +62,7 @@ func getNextID() int {
 var OurGames = []*Game{
 	{
 		ID:          1,
-		Name:        "Dark Souls",
+		Name:        "Demon Souls",
 		Description: "Challenging and thrilling. First in the series.",
 		Price:       39.99,
 		SKU:         "sca212",
